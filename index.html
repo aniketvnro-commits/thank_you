@@ -486,43 +486,125 @@
     /* Stage 3 - Sunflowers */
     .sunflower-garden {
       position:absolute;inset:0;
-      display:flex;align-items:flex-end;justify-content:center;
-      padding-bottom:0;
       overflow:hidden;
+      background:linear-gradient(to bottom, #0a1a00 0%, #1a3300 40%, #2a4a00 100%);
+    }
+    /* Sky glow */
+    .sunflower-garden::before {
+      content:'';position:absolute;top:0;left:0;right:0;height:50%;
+      background:radial-gradient(ellipse at 50% 0%, rgba(255,220,50,.18) 0%, transparent 70%);
+      pointer-events:none;
     }
     .sunflower {
       position:absolute;
-      bottom:-20px;
+      bottom:0;
       font-size:var(--sz);
+      line-height:1;
       opacity:0;
-      transform:translateY(100px) scale(.3);
-      animation:growUp var(--dur) cubic-bezier(.2,0,0,1) var(--del) forwards;
-      filter:drop-shadow(0 4px 12px rgba(0,0,0,.4));
+      transform-origin:bottom center;
+      animation:growUp var(--dur) cubic-bezier(.15,0,0,1) var(--del) forwards;
+      filter:drop-shadow(0 -4px 20px rgba(255,200,0,.3));
     }
     @keyframes growUp {
-      0%  { opacity:0;transform:translateY(120px) scale(.2) rotate(var(--tilt)); }
-      60% { opacity:1;transform:translateY(-10px) scale(1.05) rotate(calc(var(--tilt)*-0.3)); }
-      100%{ opacity:1;transform:translateY(0) scale(1) rotate(var(--tilt)); }
+      0%   { opacity:0; transform:translateY(100%) scaleY(0.05) rotate(var(--tilt)); }
+      30%  { opacity:1; }
+      70%  { transform:translateY(var(--bob)) scaleY(1.04) rotate(calc(var(--tilt)*0.4)); }
+      85%  { transform:translateY(-8px) scaleY(0.98) rotate(calc(var(--tilt)*0.2)); }
+      100% { opacity:1; transform:translateY(0) scaleY(1) rotate(var(--tilt)); }
     }
+    /* Gentle sway after growing */
+    .sunflower.sway {
+      animation:growUp var(--dur) cubic-bezier(.15,0,0,1) var(--del) forwards,
+                sway 3s ease-in-out calc(var(--del) + var(--dur)) infinite alternate;
+    }
+    @keyframes sway { from{transform:rotate(var(--tilt));} to{transform:rotate(calc(var(--tilt) + 4deg));} }
+
     .garden-msg {
-      position:absolute;top:15%;left:50%;transform:translateX(-50%);
-      text-align:center;
+      position:absolute;
+      top:12%;left:50%;transform:translateX(-50%);
+      text-align:center;width:90%;
       opacity:0;
-      animation:fadeIn 1s ease 2s forwards;
+      animation:gardenMsgIn 1.2s cubic-bezier(.2,0,0,1) 2.2s forwards;
     }
-    @keyframes fadeIn { to{opacity:1;} }
+    @keyframes gardenMsgIn {
+      from{opacity:0;transform:translateX(-50%) translateY(-20px);}
+      to{opacity:1;transform:translateX(-50%) translateY(0);}
+    }
     .garden-msg p {
-      font-family:'Cormorant Garamond',serif;
-      font-style:italic;
-      font-size:clamp(1.1rem,3.5vw,1.5rem);
-      color:rgba(255,240,180,.9);
-      text-shadow:0 0 20px rgba(255,200,50,.4);
+      font-family:'Cinzel Decorative',serif;
+      font-size:clamp(1.2rem,4vw,1.8rem);
+      color:rgba(255,240,160,1);
+      text-shadow:0 0 30px rgba(255,200,50,.7), 0 2px 8px rgba(0,0,0,.8);
       line-height:1.7;
+      letter-spacing:.05em;
+    }
+    /* Fade out sunflowers before returning */
+    .sunflower-garden.fadeout {
+      animation:gardenFade 1.5s ease forwards;
+    }
+    @keyframes gardenFade {
+      0%{opacity:1;transform:scale(1);}
+      100%{opacity:0;transform:scale(1.08);}
+    }
+
+    /* ══ MUSIC BUTTON ══ */
+    #musicBtn {
+      position:fixed;bottom:22px;left:22px;z-index:9000;
+      width:46px;height:46px;border-radius:50%;
+      background:rgba(20,12,4,.75);
+      border:1.5px solid rgba(201,151,58,.5);
+      color:var(--gold);font-size:1.2rem;
+      cursor:pointer;display:flex;align-items:center;justify-content:center;
+      backdrop-filter:blur(8px);
+      box-shadow:0 4px 20px rgba(0,0,0,.5);
+      transition:all .3s;
+      opacity:0;
+    }
+    #musicBtn.visible { opacity:1; }
+    #musicBtn:hover { border-color:var(--gold);box-shadow:0 0 20px rgba(201,151,58,.35);transform:scale(1.08); }
+    #musicBtn.playing { border-color:var(--rose);color:var(--rose); animation:musicPulse 1.5s ease-in-out infinite; }
+    @keyframes musicPulse { 0%,100%{box-shadow:0 0 8px rgba(232,160,160,.3);} 50%{box-shadow:0 0 22px rgba(232,160,160,.6);} }
+
+    /* Tap to start overlay — iOS needs user gesture */
+    #tapOverlay {
+      position:fixed;inset:0;z-index:99999;
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      background:radial-gradient(ellipse at center, #1a0d04 0%, #0a0602 100%);
+      cursor:pointer;
+      transition:opacity .8s ease;
+    }
+    #tapOverlay.hide { opacity:0;pointer-events:none; }
+    .tap-heart { font-size:5rem; animation:tapBeat 1.1s ease-in-out infinite; margin-bottom:1.5rem; }
+    @keyframes tapBeat { 0%,100%{transform:scale(1);} 40%{transform:scale(1.2);} }
+    .tap-text {
+      font-family:'Cinzel Decorative',serif;
+      font-size:clamp(.85rem,3vw,1.1rem);
+      color:var(--gold-light);
+      letter-spacing:.15em;
+      text-align:center;
+      text-shadow:0 0 20px rgba(232,201,122,.4);
+    }
+    .tap-sub {
+      font-family:'Cormorant Garamond',serif;
+      font-style:italic;font-size:.95rem;
+      color:rgba(245,239,230,.45);
+      margin-top:.6rem;letter-spacing:.06em;
     }
   </style>
 
+
 </head>
 <body>
+
+<!-- ══ TAP TO START (iOS unlock) ══ -->
+<div id="tapOverlay">
+  <div class="tap-heart">💛</div>
+  <p class="tap-text">Tap to Begin</p>
+  <p class="tap-sub">with music ♫</p>
+</div>
+
+<!-- ══ MUSIC BUTTON ══ -->
+<button id="musicBtn" aria-label="Toggle music">♫</button>
 
 <canvas id="starCanvas"></canvas>
 <div class="glow g1"></div>
@@ -791,52 +873,60 @@ document.getElementById('continueBtn').addEventListener('click',function(){
     const garden = document.getElementById('sunflowerGarden');
     garden.innerHTML='';
 
-    const sunflowerEmojis = ['🌻','🌻','🌻','🌻','🌻','🌼','🌻','🌻','🌻','🌻','🌼','🌻','🌻','🌻','🌻'];
-    const positions = [5,10,16,22,28,34,40,46,52,58,64,70,76,82,90];
-    const sizes =    [4,5,6,5,7,4,6,8,5,6,4,7,5,6,4];
-    const tilts =    [-8,-4,5,-6,3,-9,7,-3,6,-5,8,-2,4,-7,3];
-    const delays =   [0,.15,.1,.2,.05,.3,.12,.25,.08,.18,.35,.06,.22,.14,.28];
+    // Big sunflowers — varied sizes, more spread
+    const flowers =  ['🌻','🌻','🌻','🌻','🌻','🌻','🌻','🌻','🌻','🌻','🌻','🌻','🌻','🌻','🌻','🌻','🌻','🌻'];
+    const positions = [0,4,8,12,17,21,25,30,34,39,43,48,53,57,62,67,72,77,82,87,92,96,100];
+    const sizes =     [9,12,10,14,11,13,10,15,12,14,11,16,13,12,14,11,10,13,12,15,11,10,12];
+    const tilts =     [-6,-3,5,-8,4,-5,7,-2,6,-4,8,-6,3,-7,5,-3,6,-4,7,-5,4,-8,3];
+    const delays =    [0,.1,.05,.2,.08,.15,.25,.03,.18,.12,.3,.06,.22,.1,.16,.28,.07,.2,.13,.25,.09,.18,.04];
 
-    sunflowerEmojis.forEach((em,i)=>{
+    const count = Math.min(positions.length, sizes.length, tilts.length, delays.length);
+    for(let i=0;i<count;i++){
       const el = document.createElement('div');
-      el.className='sunflower';
-      el.textContent = em;
-      el.style.cssText=`left:${positions[i]}%;--sz:${sizes[i]}rem;--dur:${1+delays[i]*2}s;--del:${delays[i]}s;--tilt:${tilts[i]}deg;`;
+      el.className = 'sunflower sway';
+      el.textContent = flowers[i % flowers.length];
+      el.style.cssText = `left:${positions[i]}%;--sz:${sizes[i]}rem;--dur:${0.8+delays[i]*3}s;--del:${delays[i]}s;--tilt:${tilts[i]}deg;--bob:${-5-Math.random()*10}px;`;
       garden.appendChild(el);
-    });
+    }
 
-    // Garden message
+    // Message
     const msg = document.createElement('div');
     msg.className='garden-msg';
-    msg.innerHTML='<p>With love,<br>always 🌻</p>';
+    msg.innerHTML='<p>With Love 🌻<br>Always & Forever</p>';
     garden.appendChild(msg);
 
-    // Auto return to first page
-    setTimeout(()=>resetToStart(), 5000);
+    // Fade garden out then go to envelope
+    setTimeout(()=>{
+      garden.classList.add('fadeout');
+      setTimeout(()=>resetAndLoop(), 1500);
+    }, 5000);
   }
 
-  function resetToStart() {
+  function resetAndLoop() {
     const overlay = document.getElementById('heartOverlay');
-    overlay.style.transition='opacity 1.2s ease';
+    overlay.style.transition='opacity 1s ease';
     overlay.style.opacity='0';
 
     setTimeout(()=>{
+      // --- Hard reset everything ---
       overlay.classList.remove('active');
-      overlay.style.opacity='';overlay.style.transition='';
+      overlay.style.opacity=''; overlay.style.transition='';
 
-      // Reset stages
+      // Reset overlay stages
       document.getElementById('stageHeart').style.display='flex';
       document.getElementById('stageText').style.display='none';
       document.getElementById('stageSunflowers').style.display='none';
+      document.getElementById('sunflowerGarden').classList.remove('fadeout');
       ['tyLine1','tyLine2','tyLine3'].forEach(id=>document.getElementById(id).classList.remove('show'));
 
-      // Reset all sections
-      document.getElementById('sec-magic').classList.remove('visible');
-      document.getElementById('sec-magic').style.display='none';
-      document.getElementById('sec-letter').classList.remove('visible','show');
-      document.getElementById('sec-letter').style.display='none';
-      document.getElementById('envWrap').classList.remove('exit');
-      document.getElementById('sec-envelope').style.display='flex';
+      // Hide magic & letter
+      const sm = document.getElementById('sec-magic');
+      sm.classList.remove('visible'); sm.style.display='none';
+      const sl = document.getElementById('sec-letter');
+      sl.classList.remove('visible','show'); sl.style.display='none';
+      sl.style.animation='none';
+
+      // Reset magic children
       document.getElementById('magicHeader').classList.remove('show');
       document.querySelectorAll('.polaroid').forEach(p=>p.classList.remove('show'));
       document.getElementById('heartsBar').classList.remove('show');
@@ -844,10 +934,226 @@ document.getElementById('continueBtn').addEventListener('click',function(){
       document.getElementById('finalCard').classList.remove('show');
       document.getElementById('heartBtnWrap').classList.remove('show');
 
-      window.scrollTo({top:0,behavior:'smooth'});
-      for(let i=0;i<20;i++) setTimeout(spawnPetal,i*70);
-    }, 1400);
+      // Show envelope fresh
+      const env = document.getElementById('sec-envelope');
+      const ew = document.getElementById('envWrap');
+      ew.classList.remove('exit');
+      ew.style.animation='none'; ew.style.opacity='1'; ew.style.transform='none';
+      env.style.display='flex';
+      env.style.opacity='0';
+      env.style.transition='opacity 1s ease';
+
+      window.scrollTo({top:0,behavior:'instant'});
+      for(let i=0;i<25;i++) setTimeout(spawnPetal, i*60);
+
+      // Fade envelope in
+      requestAnimationFrame(()=>{
+        requestAnimationFrame(()=>{
+          env.style.opacity='1';
+          setTimeout(()=>{ env.style.transition=''; env.style.opacity=''; }, 1100);
+        });
+      });
+
+      // ---- AUTO LOOP: replay entire sequence automatically ----
+      setTimeout(()=>autoPlaySequence(), 2000);
+
+    }, 1100);
   }
+
+  function autoPlaySequence() {
+    // Step 1: auto open envelope
+    const openBtn = document.getElementById('openBtn');
+    spawnDust(window.innerWidth/2, window.innerHeight/2, 14);
+    flashBurst();
+    document.getElementById('envWrap').classList.add('exit');
+    for(let i=0;i<10;i++) setTimeout(spawnPetal, i*80);
+
+    setTimeout(()=>{
+      document.getElementById('sec-envelope').style.display='none';
+      const sl = document.getElementById('sec-letter');
+      sl.classList.add('visible');
+      setTimeout(()=>sl.classList.add('show'), 50);
+
+      // Step 2: auto click continue after letter is shown
+      setTimeout(()=>{
+        spawnDust(window.innerWidth/2, window.innerHeight/2, 18);
+        flashBurst();
+        for(let i=0;i<20;i++) setTimeout(spawnPetal, i*55);
+
+        setTimeout(()=>{
+          document.getElementById('sec-letter').style.display='none';
+          const sm = document.getElementById('sec-magic');
+          sm.classList.add('visible');
+          window.scrollTo({top:0,behavior:'instant'});
+
+          setTimeout(()=>document.getElementById('magicHeader').classList.add('show'), 100);
+          setTimeout(()=>document.querySelectorAll('.polaroid').forEach(p=>p.classList.add('show')), 400);
+          setTimeout(()=>document.getElementById('heartsBar').classList.add('show'), 1400);
+          setTimeout(()=>document.getElementById('magicWords').classList.add('show'), 1800);
+          setTimeout(()=>{
+            document.getElementById('finalCard').classList.add('show');
+            for(let i=0;i<25;i++) setTimeout(spawnPetal,i*90);
+          }, 2400);
+          setTimeout(()=>document.getElementById('heartBtnWrap').classList.add('show'), 3400);
+
+          // Step 3: auto trigger heart sequence
+          setTimeout(()=>{
+            document.getElementById('heartOverlay').classList.add('active');
+            document.getElementById('stageHeart').style.display='flex';
+
+            // Auto open heart after a moment of showing it
+            setTimeout(()=>{
+              document.getElementById('stageHeart').style.display='none';
+              const st = document.getElementById('stageText');
+              st.style.display='flex';
+              setTimeout(()=>document.getElementById('tyLine1').classList.add('show'), 800);
+              setTimeout(()=>document.getElementById('tyLine2').classList.add('show'), 1500);
+              setTimeout(()=>document.getElementById('tyLine3').classList.add('show'), 2200);
+              setTimeout(()=>showSunflowers(), 4200);
+            }, 2500);
+
+          }, 5000);
+
+        }, 600);
+      }, 4000); // show letter for 4s
+
+    }, 800);
+  }
+
+  // ══════════════════════════════════════
+  // MUSIC — Web Audio API (iOS compatible)
+  // A gentle looping melody using oscillators
+  // ══════════════════════════════════════
+  let audioCtx = null;
+  let musicPlaying = false;
+  let masterGain = null;
+  let allOscillators = [];
+  let musicInterval = null;
+
+  // Pentatonic scale notes (Hz) — warm, dreamy
+  const NOTES = {
+    C4:261.63, D4:293.66, E4:329.63, G4:392.00, A4:440.00,
+    C5:523.25, D5:587.33, E5:659.25, G5:783.99, A5:880.00,
+    C3:130.81, G3:196.00, A3:220.00
+  };
+
+  // Melody pattern — index into note array
+  const melody = [
+    {n:'E4',d:0.5},{n:'G4',d:0.5},{n:'A4',d:0.75},{n:'G4',d:0.25},
+    {n:'E4',d:0.5},{n:'D4',d:0.5},{n:'C4',d:1.0},
+    {n:'D4',d:0.5},{n:'E4',d:0.5},{n:'G4',d:0.75},{n:'A4',d:0.25},
+    {n:'G4',d:0.5},{n:'E4',d:0.5},{n:'D4',d:1.0},
+    {n:'A4',d:0.5},{n:'G4',d:0.5},{n:'E4',d:0.75},{n:'G4',d:0.25},
+    {n:'A4',d:0.5},{n:'C5',d:0.5},{n:'A4',d:1.0},
+    {n:'G4',d:0.5},{n:'E4',d:0.5},{n:'D4',d:0.75},{n:'C4',d:0.25},
+    {n:'E4',d:1.0},{n:'D4',d:0.5},{n:'C4',d:1.5},
+  ];
+
+  function initAudio() {
+    if (audioCtx) return;
+    const AC = window.AudioContext || window.webkitAudioContext;
+    audioCtx = new AC();
+    masterGain = audioCtx.createGain();
+    masterGain.gain.setValueAtTime(0, audioCtx.currentTime);
+    masterGain.connect(audioCtx.destination);
+  }
+
+  function playNote(freq, startTime, duration, type='sine', vol=0.12) {
+    if (!audioCtx) return;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, startTime);
+    // Slight vibrato
+    osc.frequency.setValueAtTime(freq * 1.002, startTime + duration * 0.4);
+    gain.gain.setValueAtTime(0, startTime);
+    gain.gain.linearRampToValueAtTime(vol, startTime + 0.04);
+    gain.gain.setValueAtTime(vol, startTime + duration * 0.7);
+    gain.gain.linearRampToValueAtTime(0, startTime + duration);
+    osc.connect(gain);
+    gain.connect(masterGain);
+    osc.start(startTime);
+    osc.stop(startTime + duration + 0.05);
+    allOscillators.push(osc);
+    osc.onended = () => { allOscillators = allOscillators.filter(o=>o!==osc); };
+  }
+
+  function playChord(freqs, startTime, duration, vol=0.06) {
+    freqs.forEach(f => playNote(f, startTime, duration, 'sine', vol));
+  }
+
+  function scheduleMelody() {
+    if (!audioCtx || !musicPlaying) return;
+    const now = audioCtx.currentTime + 0.05;
+    let t = now;
+    const tempo = 0.42; // seconds per beat
+
+    melody.forEach(step => {
+      const freq = NOTES[step.n];
+      const dur = step.d * tempo * 2.2;
+      // Main melody (soft triangle)
+      playNote(freq, t, dur, 'triangle', 0.13);
+      // Soft harmony a fifth below
+      playNote(freq * 0.75, t, dur, 'sine', 0.04);
+      t += step.d * tempo * 1.1;
+    });
+
+    // Background pad chords
+    const chordTime = now;
+    const padDur = melody.reduce((a,s)=>a+s.d,0) * tempo * 1.1;
+    playChord([NOTES.C3, NOTES.G3, NOTES.E4], chordTime,           padDur/3, 0.035);
+    playChord([NOTES.A3, NOTES.C4, NOTES.G4], chordTime + padDur/3, padDur/3, 0.035);
+    playChord([NOTES.G3, NOTES.D4, NOTES.A4], chordTime + padDur*2/3, padDur/3, 0.035);
+
+    // Schedule next loop
+    const loopDur = (melody.reduce((a,s)=>a+s.d,0) * tempo * 1.1) * 1000;
+    if (musicPlaying) {
+      musicInterval = setTimeout(scheduleMelody, loopDur - 200);
+    }
+  }
+
+  function startMusic() {
+    if (!audioCtx) initAudio();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    musicPlaying = true;
+    masterGain.gain.cancelScheduledValues(audioCtx.currentTime);
+    masterGain.gain.linearRampToValueAtTime(1, audioCtx.currentTime + 1.5);
+    scheduleMelody();
+    document.getElementById('musicBtn').classList.add('playing');
+    document.getElementById('musicBtn').textContent = '♫';
+  }
+
+  function stopMusic() {
+    musicPlaying = false;
+    clearTimeout(musicInterval);
+    if (masterGain) {
+      masterGain.gain.cancelScheduledValues(audioCtx.currentTime);
+      masterGain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.8);
+    }
+    document.getElementById('musicBtn').classList.remove('playing');
+    document.getElementById('musicBtn').textContent = '♩';
+  }
+
+  // Music toggle button
+  document.getElementById('musicBtn').addEventListener('click', ()=>{
+    if (musicPlaying) stopMusic(); else startMusic();
+  });
+
+  // ── TAP OVERLAY (iOS requires user gesture for AudioContext) ──
+  document.getElementById('tapOverlay').addEventListener('click', function() {
+    initAudio();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    this.classList.add('hide');
+    setTimeout(()=>{ this.style.display='none'; }, 900);
+
+    // Show music btn
+    const btn = document.getElementById('musicBtn');
+    btn.classList.add('visible');
+
+    // Auto-start music
+    setTimeout(()=>startMusic(), 300);
+  });
+
 
 </script>
 </body>
